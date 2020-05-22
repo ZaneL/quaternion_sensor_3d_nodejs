@@ -1,0 +1,63 @@
+<html>
+
+<head>
+    <title>Quaternion 3D Test</title>
+    <style>
+        body {
+            margin: 0;
+        }
+        
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <script src="js/three.js"></script>
+    <script>
+        var camera, scene, renderer;
+        var geometry, material, mesh;
+        
+        init();
+        animate();
+
+        function init() 
+        {
+            camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 10);
+            camera.position.z = 1;
+
+            scene = new THREE.Scene();
+
+            geometry = new THREE.BoxGeometry(0.4, 0.05, 0.8);
+            material = new THREE.MeshNormalMaterial();
+
+            mesh = new THREE.Mesh(geometry, material);
+            scene.add(mesh);
+
+            renderer = new THREE.WebGLRenderer({
+                antialias: true
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+        }
+
+        function animate() 
+        {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+
+        var exampleSocket = new WebSocket("ws://127.0.0.1:8080/");
+        
+        exampleSocket.onmessage = function(event) {
+            var jsonObj = JSON.parse(event.data);
+            
+            // You'll need to edit the order of the quaternions below so that the 3D object matches up with your sensor.
+            var targetQuaternion = new THREE.Quaternion(jsonObj.quat_z, jsonObj.quat_y, jsonObj.quat_w, jsonObj.quat_x);       
+            mesh.quaternion.slerp(targetQuaternion, 1);
+        }
+    </script>
+</body>
+
+</html>
